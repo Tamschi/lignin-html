@@ -1,0 +1,18 @@
+[package]
+name = "lignin-html"
+version = "0.0.0"
+description = "HTML renderer for lignin VDOM Nodes. This crate is primarily for static and server-side rendering. For client-side use, see lignin-dom."
+authors = ["Tamme Schichler <tamme@schichler.dev>"]
+edition = "2018"
+publish = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+lignin = "0.0.1"
+take_mut = { version = "0.2.2", optional = true}
+v_htmlescape = "0.4.5"
+
+[features]
+debug = ["lignin/debug"]
+remnants = ["lignin/remnants", "take_mut"]
