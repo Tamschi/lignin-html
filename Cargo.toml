@@ -35,7 +35,7 @@ remnants = ["lignin/remnants", "take_mut"]
 [dependencies]
 lignin = "0.0.1" #public
 take_mut = { version = "0.2.2", optional = true}
-v_htmlescape = "0.4.5"
+v_htmlescape = "0.10.3"
 
 [dev-dependencies]
 cargo-husky = "1.5.0"
