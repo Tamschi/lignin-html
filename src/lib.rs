@@ -1,5 +1,12 @@
-#![forbid(unsafe_code)]
 #![allow(clippy::unneeded_field_pattern)]
+#![doc(html_root_url = "https://docs.rs/lignin-html/0.0.1")]
+#![forbid(unsafe_code)]
+#![warn(clippy::pedantic)]
+
+#[cfg(doctest)]
+pub mod readme {
+	doc_comment::doctest!("../README.md");
+}
 
 pub use lignin;
 

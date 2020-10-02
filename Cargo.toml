@@ -1,18 +1,44 @@
 [package]
 name = "lignin-html"
-version = "0.0.0"
-description = "HTML renderer for lignin VDOM Nodes. This crate is primarily for static and server-side rendering. For client-side use, see lignin-dom."
+version = "0.0.1"
 authors = ["Tamme Schichler <tamme@schichler.dev>"]
 edition = "2018"
+description = "HTML renderer for lignin VDOM Nodes. This crate is primarily for static and server-side rendering. For client-side use, see lignin-dom."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Tamschi/lignin-html"
+homepage = "https://github.com/Tamschi/lignin-html/tree/v0.0.1"
+documentation = "https://docs.rs/lignin-html/0.0.1"
+keywords = ["VDOM", "HTML"]
+categories = ["web-programming", "text-processing"]
+readme = "README.md"
+include = [
+	"**/*.rs",
+	"!tests/unincluded_*.rs", # Tests of meta data files not included in the package.
+	"Cargo.toml",
+	"CHANGELOG.md",
+	"CODE_OF_CONDUCT.md",
+	"LICENSE-*",
+	"README.md",
+]
 publish = false
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[badges]
+travis-ci = { repository = "Tamschi/lignin-html", branch = "develop" }
+is-it-maintained-issue-resolution = { repository = "Tamschi/lignin-html" }
+is-it-maintained-open-issues = { repository = "Tamschi/lignin-html" }
+maintenance = { status = "experimental" }
+
+[features]
+debug = ["lignin/debug"]
+remnants = ["lignin/remnants", "take_mut"]
 
 [dependencies]
 lignin = "0.0.1"
 take_mut = { version = "0.2.2", optional = true}
 v_htmlescape = "0.4.5"
 
-[features]
-debug = ["lignin/debug"]
-remnants = ["lignin/remnants", "take_mut"]
+[dev-dependencies]
+cargo-husky = "1.5.0"
+doc-comment = "0.3.3"
+git_info = "0.1.2"
+version-sync = "0.9.1"
