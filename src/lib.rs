@@ -100,6 +100,7 @@ pub fn render<'a>(
 #[non_exhaustive]
 pub enum Error<'a> {
 	Unsupported(&'a Node<'a>),
+	InvalidAttributeName,
 	InvalidElementName,
 	Format(fmtError),
 	Other(Box<dyn stdError>),
@@ -118,13 +119,24 @@ impl<'a> From<Box<dyn stdError>> for Error<'a> {
 }
 
 fn validate_element_name(value: &str) -> Result<&str, Error> {
-	Ok(value) //TODO
+	if value.contains(|c| c == '>') {
+		Err(Error::InvalidElementName) //TODO
+	} else {
+		Ok(value)
+	}
 }
 
 fn validate_attribute_name(value: &str) -> Result<&str, Error> {
-	Ok(value) //TODO
+	if value.contains(|c| c == '>') {
+		Err(Error::InvalidAttributeName) //TODO
+	} else {
+		Ok(value)
+	}
 }
 
 fn escape_attribute_value(value: &str) -> String {
-	value.to_owned() //TODO
+	if value.contains('"') {
+		todo!("Attribute value escapes")
+	}
+	value.to_owned()
 }
