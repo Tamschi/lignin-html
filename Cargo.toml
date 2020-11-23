@@ -33,7 +33,7 @@ debug = ["lignin/debug"]
 remnants = ["lignin/remnants", "take_mut"]
 
 [dependencies]
-lignin = "0.0.1" #public
+lignin = "0.0.2" #public
 take_mut = { version = "0.2.2", optional = true}
 v_htmlescape = "0.11.0"
 
