@@ -11,23 +11,16 @@ pub mod readme {
 use core::fmt::{Error as fmtError, Write};
 pub use lignin;
 use lignin::{
+	bumpalo::Bump,
+	remnants::RemnantSite as rRemnantSite,
 	Attribute, Element as lElement,
-	Node::{self, Comment, Element, Multi, Ref, Text},
+	Node::{self, Comment, Element, Multi, Ref, RemnantSite, Text},
 };
 use std::error::Error as stdError;
 use v_htmlescape::escape;
 
-#[cfg(feature = "remnants")]
-use lignin::Node::RemnantSite;
-#[cfg(feature = "remnants")]
-use lignin::{bumpalo::Bump, remnants::RemnantSite as rRemnantSite};
-
 #[allow(clippy::missing_errors_doc)]
-pub fn render<'a>(
-	w: &mut impl Write,
-	vdom: &'a Node<'a>,
-	#[cfg(feature = "remnants")] bump: &'a Bump,
-) -> Result<(), Error<'a>> {
+pub fn render<'a>(w: &mut impl Write, vdom: &'a Node<'a>, bump: &'a Bump) -> Result<(), Error<'a>> {
 	match vdom {
 		&Comment(comment) => {
 			write!(w, "<!--{}-->", escape(comment))?;
@@ -54,12 +47,7 @@ pub fn render<'a>(
 			}
 			w.write_char('>')?;
 			for node in *content {
-				render(
-					w,
-					node,
-					#[cfg(feature = "remnants")]
-					bump,
-				)?;
+				render(w, node, bump)?;
 			}
 			//TODO: Fill out the blacklist here.
 			if !["BR"].contains(element_name) {
@@ -67,20 +55,10 @@ pub fn render<'a>(
 			}
 		}
 
-		Ref(target) => render(
-			w,
-			target,
-			#[cfg(feature = "remnants")]
-			bump,
-		)?,
+		Ref(target) => render(w, target, bump)?,
 		Multi(nodes) => {
 			for node in *nodes {
-				render(
-					w,
-					node,
-					#[cfg(feature = "remnants")]
-					bump,
-				)?;
+				render(w, node, bump)?;
 			}
 		}
 		Text(text) => write!(
@@ -88,7 +66,6 @@ pub fn render<'a>(
 			"{}",
 			text.replace("<", "&lt;") //TODO: Check if this is enough.
 		)?,
-		#[cfg(feature = "remnants")]
 		RemnantSite(rRemnantSite { content, .. }) => {
 			render(w, content, bump)?;
 		}

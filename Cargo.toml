@@ -30,11 +30,9 @@ maintenance = { status = "experimental" }
 
 [features]
 debug = ["lignin/debug"]
-remnants = ["lignin/remnants", "take_mut"]
 
 [dependencies]
-lignin = "0.0.1" #public
-take_mut = { version = "0.2.2", optional = true}
+lignin = "0.0.2" #public
 v_htmlescape = "0.11.0"
 
 [dev-dependencies]
