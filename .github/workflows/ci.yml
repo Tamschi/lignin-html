@@ -12,7 +12,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: actions-rs/toolchain@v1
-    - run: cat CI.toml >> Cargo.toml
     - run: cargo test --workspace --all-features
 
   check:
@@ -35,7 +34,6 @@ jobs:
         toolchain: ${{matrix.rust}}
         profile: minimal
         target: ${{matrix.target}}
-    - run: cat CI.toml >> Cargo.toml
     - run: cargo +${{matrix.rust}} check ${{env.lib}} ${{env.target}} --no-default-features
     - run: cargo +${{matrix.rust}} check ${{env.lib}} ${{env.target}}
     - run: cargo +${{matrix.rust}} check ${{env.lib}} ${{env.target}} --all-features
@@ -48,7 +46,6 @@ jobs:
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: nightly
-    - run: cat CI.toml >> Cargo.toml
     - run: cargo +nightly update -Z minimal-versions
     - run: cargo +nightly check --all-features
 
@@ -62,7 +59,6 @@ jobs:
         toolchain: nightly
         profile: minimal
         components: clippy
-    - run: cat CI.toml >> Cargo.toml
     - run: cargo +nightly clippy --all-features
 
   fmt:
@@ -75,5 +71,4 @@ jobs:
         toolchain: nightly
         profile: minimal
         components: rustfmt
-    - run: cat CI.toml >> Cargo.toml
     - run: cargo +nightly fmt -- --check
