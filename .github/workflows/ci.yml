@@ -12,6 +12,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: actions-rs/toolchain@v1
+    - run: cat CI.toml >> Cargo.toml
     - run: cargo test --workspace --all-features
 
   check:
@@ -24,9 +25,10 @@ jobs:
         include:
         - os: ubuntu
           target: wasm32-unknown-unknown
+          no-workspace: --package asteracea --lib
     env:
-      lib: ${{matrix.target && '' || '--lib'}}
       target: ${{matrix.target && format('--target={0}', matrix.target)}}
+      workspace: ${{matrix.no-workspace || '--workspace'}}
     steps:
     - uses: actions/checkout@v2
     - uses: actions-rs/toolchain@v1
@@ -34,9 +36,10 @@ jobs:
         toolchain: ${{matrix.rust}}
         profile: minimal
         target: ${{matrix.target}}
-    - run: cargo +${{matrix.rust}} check ${{env.lib}} ${{env.target}} --no-default-features
-    - run: cargo +${{matrix.rust}} check ${{env.lib}} ${{env.target}}
-    - run: cargo +${{matrix.rust}} check ${{env.lib}} ${{env.target}} --all-features
+    - run: cat CI.toml >> Cargo.toml
+    - run: cargo +${{matrix.rust}} check ${{env.target}} ${{env.workspace}} --no-default-features
+    - run: cargo +${{matrix.rust}} check ${{env.target}} ${{env.workspace}}
+    - run: cargo +${{matrix.rust}} check ${{env.target}} ${{env.workspace}} --all-features
 
   minimal-versions:
     name: Minimal Versions
@@ -46,6 +49,7 @@ jobs:
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: nightly
+    - run: cat CI.toml >> Cargo.toml
     - run: cargo +nightly update -Z minimal-versions
     - run: cargo +nightly check --all-features
 
@@ -59,7 +63,8 @@ jobs:
         toolchain: nightly
         profile: minimal
         components: clippy
-    - run: cargo +nightly clippy --all-features
+    - run: cat CI.toml >> Cargo.toml
+    - run: cargo +nightly clippy --workspace --all-features
 
   fmt:
     name: Formatting
@@ -71,4 +76,5 @@ jobs:
         toolchain: nightly
         profile: minimal
         components: rustfmt
-    - run: cargo +nightly fmt -- --check
+    - run: cat CI.toml >> Cargo.toml
+    - run: cargo +nightly fmt --all -- --check
