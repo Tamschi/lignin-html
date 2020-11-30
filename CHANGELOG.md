@@ -1,8 +1,8 @@
 # lignin-html Changelog
 
-## next
+## 0.0.2
 
-TODO: Date
+2020-11-30
 
 * **Breaking:**
   * Removed "remnants" features (always enabled now)
