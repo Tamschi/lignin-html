@@ -1,5 +1,14 @@
 # lignin-html Changelog
 
+<!-- markdownlint-disable no-trailing-punctuation -->
+
+## next
+
+TODO: Date
+
+* **Breaking:**
+  * Upgraded `lignin` dependency from 0.0.3 to 0.0.4
+
 ## 0.0.3
 
 2021-01-03
