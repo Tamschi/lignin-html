@@ -2,6 +2,14 @@
 
 <!-- markdownlint-disable no-trailing-punctuation -->
 
+## next
+
+TODO: Date
+
+* **Breaking:**
+  * Increased minimum supported Rust version from 1.42.0 to 1.44.0
+    > required because of `lignin` upgrade in the previous version.
+
 ## 0.0.4
 
 2021-01-30
