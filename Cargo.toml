@@ -1,13 +1,13 @@
 [package]
 name = "lignin-html"
-version = "0.0.3"
+version = "0.0.4"
 authors = ["Tamme Schichler <tamme@schichler.dev>"]
 edition = "2018"
 description = "HTML renderer for lignin VDOM Nodes. This crate is primarily for static and server-side rendering. For client-side use, see lignin-dom."
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/Tamschi/lignin-html"
-homepage = "https://github.com/Tamschi/lignin-html/tree/v0.0.3"
-documentation = "https://docs.rs/lignin-html/0.0.3"
+homepage = "https://github.com/Tamschi/lignin-html/tree/v0.0.4"
+documentation = "https://docs.rs/lignin-html/0.0.4"
 keywords = ["VDOM", "HTML"]
 categories = ["web-programming", "text-processing"]
 readme = "README.md"
