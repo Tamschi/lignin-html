@@ -1,5 +1,15 @@
 # lignin-html Changelog
 
+<!-- markdownlint-disable no-trailing-punctuation -->
+
+## 0.0.4
+
+2021-01-30
+
+* **Breaking:**
+  * Upgraded `lignin` dependency from 0.0.3 to 0.0.5
+    > to support fallible allocation/bump object initialisation downstream.
+
 ## 0.0.3
 
 2021-01-03
