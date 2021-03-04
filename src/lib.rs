@@ -166,6 +166,15 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 				target.write_char('>')?;
 			}
 
+			// See <https://html.spec.whatwg.org/multipage/syntax.html#element-restrictions>.
+			// Just adding the newline here unconditionally isn't "perfect", but it's most likely faster than checking if it's necessary.
+			match kind {
+				ElementKind::EscapableRawTextTextarea | ElementKind::NormalPre => {
+					target.write_char('\n')?
+				}
+				_ => (),
+			}
+
 			// Content:
 			match kind {
 				ElementKind::Void | ElementKind::ForeignSelfClosing => {
