@@ -40,3 +40,21 @@ fn div() {
 	.unwrap();
 	assert_eq!(fragment, "<div></div>");
 }
+
+#[test]
+fn text() {
+	let mut fragment = String::new();
+	render_fragment(
+		&Node::Comment {
+			comment: "><!-- Hello! --!> --><!-",
+			dom_binding: None,
+		}
+		.prefer_thread_safe(),
+		&mut fragment,
+	)
+	.unwrap();
+	assert_eq!(
+		fragment,
+		"<!--\u{200c}><!\u{200d}-- Hello! --\u{200d}!> --\u{200d}><!-\u{200c}-->"
+	);
+}
