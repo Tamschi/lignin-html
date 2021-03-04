@@ -27,15 +27,13 @@ is-it-maintained-issue-resolution = { repository = "Tamschi/lignin-html" }
 is-it-maintained-open-issues = { repository = "Tamschi/lignin-html" }
 maintenance = { status = "experimental" }
 
-[features]
-debug = ["lignin/debug"]
-
 [dependencies]
-lignin = "0.0.5" #public
-v_htmlescape = "0.13.0"
+lignin = "0.0.5" # public
+logos = "0.12.0"
 
 [dev-dependencies]
 cargo-husky = "1.5.0"
 doc-comment = "0.3.3"
 git_info = "0.1.2"
+lignin = { version = "0.0.5", features = ["callbacks"] }
 version-sync = "0.9.1"
