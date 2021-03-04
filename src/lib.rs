@@ -121,12 +121,7 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 			dom_binding: _,
 		} => {
 			fn validate_attribute_name<S: ThreadSafety>(name: &str) -> Result<&str, Error<S>> {
-				//TODO: Better validation.
-				if name.contains(|c| c == '"') {
-					Err(Error(ErrorKind::InvalidAttributeName(name)))
-				} else {
-					Ok(name)
-				}
+				todo!()
 			}
 
 			let kind = ElementKind::detect(name)
@@ -230,12 +225,7 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 			text,
 			dom_binding: _,
 		} => {
-			// This is only reachable through
-			write!(
-				target,
-				"{}",
-				text.replace('&', "&amp;").replace('<', "&lt;")
-			)?
+			todo!()
 		}
 		Node::RemnantSite(_) => todo!("`RemnantSite`"),
 	};
