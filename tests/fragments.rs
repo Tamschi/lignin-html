@@ -53,8 +53,5 @@ fn text() {
 		&mut fragment,
 	)
 	.unwrap();
-	assert_eq!(
-		fragment,
-		"<!--\u{200c}><!\u{200d}-- Hello! --\u{200d}!> --\u{200d}><!-\u{200c}-->"
-	);
+	assert_eq!(fragment, "<!--|><!== Hello! ==!> ==><!-|-->");
 }

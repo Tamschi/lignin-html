@@ -8,9 +8,11 @@
 //!
 //! # Caveats
 //!
-//! In HTML comments, `\u{0200C}` and/or `\u{0200D}` (i.e. [zero width non-joiner](https://graphemica.com/200C) and/or [zero width joiner](https://graphemica.com/200D))
-//! are inserted to break up forbidden character sequences.
+//! In HTML comments, if illegal comment text is encountered, certain dashes (`-`) are **silently** replaced with equal signs (`=`) and pipe characters (`|`) are **silently** inserted around the comment text as necessary.
 //! See [***Comments***](https://html.spec.whatwg.org/multipage/syntax.html#comments).
+//!
+//! > Originally I was going to use [zero width non-joiner](https://graphemica.com/200C) and [zero width joiner](https://graphemica.com/200D) characters for this,
+//! > to make the comment resemble the original better, but this could be a very bad idea if any transport in-between strips Unicode.
 #![doc(html_root_url = "https://docs.rs/lignin-html/0.0.5")]
 #![forbid(unsafe_code)]
 #![no_std]
@@ -68,10 +70,9 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 			dom_binding: _,
 		} => {
 			// This is just a comment, so it shouldn't break the app.
-			const ZWNJ: char = '\u{0200C}';
 			target.write_str("<!--")?;
 			if comment.starts_with('>') || comment.starts_with("->") {
-				target.write_char(ZWNJ)?
+				target.write_char('|')?
 			}
 
 			#[derive(Logos)]
@@ -89,11 +90,10 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 			}
 
 			for token in CommentToken::lexer(comment) {
-				// Zero Width Joiners.
 				let replacement = match token {
-					CommentToken::LtBangDashDash => "<!\u{0200D}--",
-					CommentToken::DashDashGt => "--\u{0200D}>",
-					CommentToken::DashDashBangGt => "--\u{0200D}!>",
+					CommentToken::LtBangDashDash => "<!==",
+					CommentToken::DashDashGt => "==>",
+					CommentToken::DashDashBangGt => "==!>",
 					CommentToken::Other(c) => {
 						target.write_char(c)?;
 						continue;
@@ -104,7 +104,7 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 			}
 
 			if comment.ends_with("<!-") {
-				target.write_char(ZWNJ)?
+				target.write_char('|')?
 			}
 			target.write_str("-->")?;
 		}
