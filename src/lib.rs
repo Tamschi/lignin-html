@@ -88,7 +88,7 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 				DashDashGt,
 				#[token("--!>")]
 				DashDashBangGt,
-				#[regex(".", |lex| lex.slice().parse())]
+				#[regex("(?s).", |lex| lex.slice().parse())]
 				Other(char),
 				#[error]
 				Error,
@@ -460,34 +460,34 @@ fn render_escapable_raw_text<'a, S: ThreadSafety>(
 #[derive(Logos, PartialEq)]
 enum ElementKind {
 	/// See <https://html.spec.whatwg.org/multipage/syntax.html#void-elements>.
-	#[regex("[aA][rR][eE][aA]")]
-	#[regex("[bB][aA][sS][eE]")]
-	#[regex("[bB][rR]")]
-	#[regex("[cC][oO][lL]")]
-	#[regex("[eE][mM][bB][eE][dD]")]
-	#[regex("[hH][rR]")]
-	#[regex("[iI][mM][gG]")]
-	#[regex("[iI][nN][pP][uU][tT]")]
-	#[regex("[lL][iI][nN][kK]")]
-	#[regex("[mM][eE][tT][aA]")]
-	#[regex("[pP][aA][rR][aA][mM]")]
-	#[regex("[sS][oO][uU][rR][cC][eE]")]
-	#[regex("[tT][rR][aA][cC][kK]")]
-	#[regex("[wW][bB][rR]")]
+	#[regex("(?i)AREA")]
+	#[regex("(?i)BASE")]
+	#[regex("(?i)BR")]
+	#[regex("(?i)COL")]
+	#[regex("(?i)EMBED")]
+	#[regex("(?i)HR")]
+	#[regex("(?i)IMG")]
+	#[regex("(?i)INPUT")]
+	#[regex("(?i)LINK")]
+	#[regex("(?i)META")]
+	#[regex("(?i)PARAM")]
+	#[regex("(?i)SOURCE")]
+	#[regex("(?i)TRACK")]
+	#[regex("(?i)WBR")]
 	Void,
 	/// See <https://html.spec.whatwg.org/multipage/syntax.html#the-template-element-2>.
-	#[regex("[tT][eE][mM][pP][lL][aA][tT][eE]")]
+	#[regex("(?i)TEMPLATE")]
 	Template,
 	/// See <https://html.spec.whatwg.org/multipage/syntax.html#raw-text-elements>.
-	#[regex("[sS][cC][rR][iI][pP][tT]")]
-	#[regex("[sS][tT][yY][lL][eE]")]
+	#[regex("(?i)SCRIPT")]
+	#[regex("(?i)STYLE")]
 	RawText,
 	/// See <https://html.spec.whatwg.org/multipage/syntax.html#escapable-raw-text-elements>.
 	/// See <https://html.spec.whatwg.org/multipage/syntax.html#element-restrictions> for special handling.
-	#[regex("[tT][eE][xX][tT][aA][rR][eE][aA]")]
+	#[regex("(?i)TEXTAREA")]
 	EscapableRawTextTextarea,
 	/// See <https://html.spec.whatwg.org/multipage/syntax.html#escapable-raw-text-elements>.
-	#[regex("[tT][iI][tT][lL][eE]")]
+	#[regex("(?i)TITLE")]
 	EscapableRawText,
 	/// See <https://html.spec.whatwg.org/multipage/syntax.html#foreign-elements>.
 	//TODO
