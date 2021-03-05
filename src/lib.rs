@@ -39,7 +39,7 @@ use logos::{Lexer, Logos};
 
 //TODO: Benchmark and text-size-check using `core::fmt` macros vs. calling `Write` methods.
 
-/// Renders `vdom` into `target` as HTML document *with* [**DOCTYPE***](https://html.spec.whatwg.org/multipage/syntax.html#the-doctype).
+/// Renders `vdom` into `target` as HTML document *with* [***DOCTYPE***](https://html.spec.whatwg.org/multipage/syntax.html#the-doctype).
 ///
 /// `depth_limit` is measured in [`Node`]s and must be at least `1` to not error on it.
 ///
@@ -64,7 +64,7 @@ pub fn render_document<'a, S: ThreadSafety>(
 	render_fragment(vdom, target, depth_limit)
 }
 
-/// Renders `vdom` into `target` as HTML fragment *without* [**DOCTYPE***](https://html.spec.whatwg.org/multipage/syntax.html#the-doctype).
+/// Renders `vdom` into `target` as HTML fragment *without* [***DOCTYPE***](https://html.spec.whatwg.org/multipage/syntax.html#the-doctype).
 ///
 /// `depth_limit` is measured in [`Node`]s and must be at least `1` to not error on it.
 ///
