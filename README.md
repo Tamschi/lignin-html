@@ -32,8 +32,42 @@ cargo add lignin-html
 ## Example
 
 ```rust
-// TODO_EXAMPLE
+use lignin::{Node, Element};
+use lignin_html::render_document;
+
+let mut document = String::new();
+
+render_document(
+  &Node::Element {
+    element: &Element {
+      // `lignin-html` is case-preserving but insensitive.
+      // `lignin-dom` slightly prefers all-caps, as may other DOM renderers.¹
+      name: "DIV",
+      attributes: &[],
+      content: Node::Multi(&[
+        "Hello! ".into(),
+        Node::Comment {
+          // `lignin-html` escapes or substitutes where necessary and unobtrusive.
+          comment: "--> Be mindful of HTML pitfalls. <!--",
+          dom_binding: None,
+        }
+      ]),
+      event_bindings: &[],
+    },
+    dom_binding: None, // Bindings are inactive with `lignin-html`.
+  }
+  .prefer_thread_safe(),
+  &mut document,
+  1000, // depth_limit
+).unwrap(); // Invalid content that can't be escaped is rejected.
+
+assert_eq!(
+  document,
+  "<!DOCTYPE html><DIV>Hello! <!--==> Be mindful of HTML pitfalls. <!==--></DIV>",
+);
 ```
+
+¹ See [Element.tagName (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/Element/tagName). This avoids case-insensitive comparisons, but can cause elements to be recreated during hydration if the reported ***tagName*** doesn't quite match the generated `name`.
 
 ## License
 
