@@ -2,6 +2,9 @@
 //!
 //! Escaping is performed automatically where necessary, but the output isn't guaranteed to be minimal.
 //!
+//! **`lignin-html` is not round-trip-safe regarding any HTML parser implementation.**  
+//! This is impossible for any HTML renderer that accepts adjacent [`Node::Text`]s, but maybe should still be noted explicitly.
+//!
 //! # About the Documentation
 //!
 //! HTML terms are ***bold italic*** and linked to the [HTML specification](https://html.spec.whatwg.org/multipage/syntax.html) (as of 2021-03-04).
