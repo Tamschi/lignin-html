@@ -225,7 +225,6 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 					unreachable!()
 				}
 			}
-			render_fragment(content, target)?;
 
 			// Closing tag:
 			match kind {
