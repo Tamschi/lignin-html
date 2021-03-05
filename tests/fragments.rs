@@ -16,6 +16,7 @@ fn br() {
 		}
 		.prefer_thread_safe(),
 		&mut fragment,
+		1,
 	)
 	.unwrap();
 	assert_eq!(fragment, "<br>");
@@ -36,6 +37,7 @@ fn div() {
 		}
 		.prefer_thread_safe(),
 		&mut fragment,
+		2,
 	)
 	.unwrap();
 	assert_eq!(fragment, "<div></div>");
@@ -51,6 +53,7 @@ fn text() {
 		}
 		.prefer_thread_safe(),
 		&mut fragment,
+		1,
 	)
 	.unwrap();
 	assert_eq!(fragment, "<!--|><!== Hello! ==!> ==><!-|-->");

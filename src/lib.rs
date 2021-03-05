@@ -41,6 +41,8 @@ use logos::{Lexer, Logos};
 
 /// Renders `vdom` into `target` as HTML document *with* [**DOCTYPE***](https://html.spec.whatwg.org/multipage/syntax.html#the-doctype).
 ///
+/// `depth_limit` is measured in [`Node`]s and must be at least `1` to not error on it.
+///
 /// # Caveats
 ///
 /// See [`render_fragment`#caveats].
@@ -53,12 +55,18 @@ use logos::{Lexer, Logos};
 pub fn render_document<'a, S: ThreadSafety>(
 	vdom: &'a Node<'a, S>,
 	target: &mut impl Write,
+	depth_limit: usize,
 ) -> Result<(), Error<'a, S>> {
+	if depth_limit == 0 {
+		return Err(Error(ErrorKind::DepthLimitExceeded(vdom)));
+	}
 	write!(target, "<!DOCTYPE html>")?;
-	render_fragment(vdom, target)
+	render_fragment(vdom, target, depth_limit)
 }
 
 /// Renders `vdom` into `target` as HTML fragment *without* [**DOCTYPE***](https://html.spec.whatwg.org/multipage/syntax.html#the-doctype).
+///
+/// `depth_limit` is measured in [`Node`]s and must be at least `1` to not error on it.
 ///
 /// # Errors
 ///
@@ -70,7 +78,11 @@ pub fn render_document<'a, S: ThreadSafety>(
 pub fn render_fragment<'a, S: ThreadSafety>(
 	vdom: &'a Node<'a, S>,
 	target: &mut impl Write,
+	depth_limit: usize,
 ) -> Result<(), Error<'a, S>> {
+	if depth_limit == 0 {
+		return Err(Error(ErrorKind::DepthLimitExceeded(vdom)));
+	}
 	match *vdom {
 		// See <https://html.spec.whatwg.org/multipage/syntax.html#comments>.
 		Node::Comment {
@@ -213,11 +225,11 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 				ElementKind::Template
 				| ElementKind::Normal
 				| ElementKind::NormalPre
-				| ElementKind::ForeignNotSelfClosing => render_fragment(content, target)?,
-				ElementKind::RawText => render_raw_text(content, target, name)?,
+				| ElementKind::ForeignNotSelfClosing => render_fragment(content, target, depth_limit - 1)?,
+				ElementKind::RawText => render_raw_text(content, target, name, depth_limit - 1)?,
 
 				ElementKind::EscapableRawText | ElementKind::EscapableRawTextTextarea => {
-					render_escapable_raw_text(content, target)?
+					render_escapable_raw_text(content, target, depth_limit - 1)?
 				}
 				ElementKind::PotentialCustomElementNameCharacter
 				| ElementKind::Dash
@@ -247,16 +259,16 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 		Node::Memoized {
 			state_key: _,
 			content,
-		} => render_fragment(content, target)?,
+		} => render_fragment(content, target, depth_limit - 1)?,
 
 		Node::Multi(nodes) => {
 			for node in nodes {
-				render_fragment(node, target)?;
+				render_fragment(node, target, depth_limit - 1)?;
 			}
 		}
 		Node::Keyed(reorderable_fragments) => {
 			for fragment in reorderable_fragments {
-				render_fragment(&fragment.content, target)?
+				render_fragment(&fragment.content, target, depth_limit - 1)?
 			}
 		}
 
@@ -303,7 +315,12 @@ fn render_raw_text<'a, S: ThreadSafety>(
 	vdom: &'a Node<'a, S>,
 	target: &mut impl Write,
 	element_name: &'a str,
+	depth_limit: usize,
 ) -> Result<(), Error<'a, S>> {
+	if depth_limit == 0 {
+		return Err(Error(ErrorKind::DepthLimitExceeded(vdom)));
+	}
+
 	match vdom {
 		Node::Comment { .. } | Node::Element { .. } => {
 			return Err(Error(ErrorKind::NonTextDomNodeInRawTextPosition(vdom)))
@@ -311,15 +328,15 @@ fn render_raw_text<'a, S: ThreadSafety>(
 		Node::Memoized {
 			state_key: _,
 			content,
-		} => render_raw_text(content, target, element_name)?,
+		} => render_raw_text(content, target, element_name, depth_limit - 1)?,
 		Node::Multi(nodes) => {
 			for node in *nodes {
-				render_raw_text(node, target, element_name)?
+				render_raw_text(node, target, element_name, depth_limit - 1)?
 			}
 		}
 		Node::Keyed(pairs) => {
 			for pair in *pairs {
-				render_raw_text(&pair.content, target, element_name)?
+				render_raw_text(&pair.content, target, element_name, depth_limit - 1)?
 			}
 		}
 		Node::Text {
@@ -398,7 +415,11 @@ fn render_raw_text<'a, S: ThreadSafety>(
 fn render_escapable_raw_text<'a, S: ThreadSafety>(
 	vdom: &'a Node<'a, S>,
 	target: &mut impl Write,
+	depth_limit: usize,
 ) -> Result<(), Error<'a, S>> {
+	if depth_limit == 0 {
+		return Err(Error(ErrorKind::DepthLimitExceeded(vdom)));
+	}
 	match vdom {
 		Node::Comment { .. } | Node::Element { .. } => {
 			return Err(Error(ErrorKind::NonTextDomNodeInEscapableRawTextPosition(
@@ -408,15 +429,15 @@ fn render_escapable_raw_text<'a, S: ThreadSafety>(
 		Node::Memoized {
 			state_key: _,
 			content,
-		} => render_escapable_raw_text(content, target)?,
+		} => render_escapable_raw_text(content, target, depth_limit - 1)?,
 		Node::Multi(nodes) => {
 			for node in *nodes {
-				render_escapable_raw_text(node, target)?
+				render_escapable_raw_text(node, target, depth_limit - 1)?
 			}
 		}
 		Node::Keyed(pairs) => {
 			for pair in *pairs {
-				render_escapable_raw_text(&pair.content, target)?
+				render_escapable_raw_text(&pair.content, target, depth_limit - 1)?
 			}
 		}
 		Node::Text {
@@ -616,6 +637,7 @@ enum ErrorKind<'a, S: ThreadSafety> {
 	NonTextDomNodeInRawTextPosition(&'a Node<'a, S>),
 	NonTextDomNodeInEscapableRawTextPosition(&'a Node<'a, S>),
 	ElementClosedInRawText(&'a str),
+	DepthLimitExceeded(&'a Node<'a, S>),
 	FmtError(fmt::Error),
 }
 
@@ -646,6 +668,7 @@ impl<'a, S: ThreadSafety> Display for Error<'a, S> {
 			ErrorKind::ElementClosedInRawText(str) => {
 				write!(f, "Element closed in raw text: {:?}", str)
 			}
+			ErrorKind::DepthLimitExceeded(_) => write!(f, "Depth limit exceeded"),
 			ErrorKind::FmtError(fmt_error) => Display::fmt(fmt_error, f),
 		}
 	}
