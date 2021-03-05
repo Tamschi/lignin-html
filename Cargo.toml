@@ -27,6 +27,9 @@ is-it-maintained-issue-resolution = { repository = "Tamschi/lignin-html" }
 is-it-maintained-open-issues = { repository = "Tamschi/lignin-html" }
 maintenance = { status = "experimental" }
 
+[features]
+std = [] # Implements std::error::Error on lignin_html::Error
+
 [dependencies]
 lignin = "0.0.5" # public
 logos = "0.12.0"

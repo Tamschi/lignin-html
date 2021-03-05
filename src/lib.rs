@@ -18,16 +18,21 @@
 #![no_std]
 #![warn(clippy::pedantic)]
 
+//TODO: Much more thorough tests, ideally with coverage.
+
 #[cfg(doctest)]
 pub mod readme {
 	doc_comment::doctest!("../README.md");
 }
 
-use core::fmt::{self, Write};
+use core::{
+	fmt::{self, Display, Write},
+	ops::Range,
+};
 use fmt::Debug;
 pub use lignin;
 use lignin::{Attribute, Element, Node, ThreadSafety};
-use logos::Logos;
+use logos::{Lexer, Logos};
 
 //TODO: Benchmark and text-size-check using `core::fmt` macros vs. calling `Write` methods.
 
@@ -120,8 +125,28 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 				},
 			dom_binding: _,
 		} => {
+			/// See <https://html.spec.whatwg.org/multipage/syntax.html#syntax-attribute-name>.
 			fn validate_attribute_name<S: ThreadSafety>(name: &str) -> Result<&str, Error<S>> {
-				todo!()
+				for c in name.chars() {
+					match c {
+						// <https://infra.spec.whatwg.org/#control>
+						// <https://infra.spec.whatwg.org/#c0-control>
+						'\0'..='\u{1F}' | '\u{7F}'..='\u{9F}' |
+
+						// <https://html.spec.whatwg.org/multipage/syntax.html#syntax-attribute-name>
+						' ' | '"' | '\'' | '>' | '/' | '=' |
+
+						// <https://infra.spec.whatwg.org/#noncharacter>
+						'\u{FDD0}'..='\u{FDEF}' => {
+							return Err(Error(ErrorKind::InvalidAttributeName(name)))
+						}
+						c if ((c as u32) & 0xffff >= 0xfffe) && (c as u32) >> 16 <= 0x10 => {
+							return Err(Error(ErrorKind::InvalidAttributeName(name)))
+						}
+						_ => (),
+					}
+				}
+				Ok(name)
 			}
 
 			let kind = ElementKind::detect(name)
@@ -184,12 +209,12 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 				}
 				ElementKind::Template
 				| ElementKind::Normal
+				| ElementKind::NormalPre
 				| ElementKind::ForeignNotSelfClosing => render_fragment(content, target)?,
-				ElementKind::RawText => {
-					todo!("RawText content")
-				}
-				ElementKind::EscapableRawText => {
-					todo!("EscapableRawText content")
+				ElementKind::RawText => render_raw_text(content, target, name)?,
+
+				ElementKind::EscapableRawText | ElementKind::EscapableRawTextTextarea => {
+					render_escapable_raw_text(content, target)?
 				}
 				ElementKind::PotentialCustomElementNameCharacter
 				| ElementKind::Dash
@@ -205,8 +230,10 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 				ElementKind::Template
 				| ElementKind::RawText
 				| ElementKind::EscapableRawText
+				| ElementKind::EscapableRawTextTextarea
 				| ElementKind::ForeignNotSelfClosing
-				| ElementKind::Normal => write!(target, "</{}>", name)?,
+				| ElementKind::Normal
+				| ElementKind::NormalPre => write!(target, "</{}>", name)?,
 				ElementKind::PotentialCustomElementNameCharacter
 				| ElementKind::Dash
 				| ElementKind::Invalid => {
@@ -230,18 +257,206 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 				render_fragment(&fragment.content, target)?
 			}
 		}
+
 		Node::Text {
 			text,
 			dom_binding: _,
 		} => {
-			todo!()
+			//FIXME: I haven't found the actual reference on this yet.
+
+			#[derive(Logos)]
+			enum PlainTextToken<'a> {
+				/// This could close this element or start a new one.
+				#[token("<")]
+				Lt,
+				/// See <https://html.spec.whatwg.org/multipage/syntax.html#character-references>.
+				///
+				/// This could be an ambiguous ampersand or part something that would be parsed as character reference, so it's escaped unconditionally.
+				#[token("&")]
+				Ampersand,
+				#[regex("[^<&]+")]
+				SafeVerbatim(&'a str),
+				#[error]
+				Error,
+			}
+
+			for token in PlainTextToken::lexer(text) {
+				match token {
+					PlainTextToken::Lt => target.write_str("&lt;"),
+					PlainTextToken::Ampersand => target.write_str("&amp;"),
+					PlainTextToken::SafeVerbatim(str) => target.write_str(str),
+					PlainTextToken::Error => unreachable!(),
+				}?
+			}
 		}
+
 		Node::RemnantSite(_) => todo!("`RemnantSite`"),
 	};
 	Ok(())
 }
 
-//FIXME: This probably blows up the text size. Check and, if necessary, replace it with a better categorization algorithm.
+#[allow(clippy::items_after_statements)]
+#[allow(clippy::too_many_lines)]
+fn render_raw_text<'a, S: ThreadSafety>(
+	vdom: &'a Node<'a, S>,
+	target: &mut impl Write,
+	element_name: &'a str,
+) -> Result<(), Error<'a, S>> {
+	match vdom {
+		Node::Comment { .. } | Node::Element { .. } => {
+			return Err(Error(ErrorKind::NonTextDomNodeInRawTextPosition(vdom)))
+		}
+		Node::Memoized {
+			state_key: _,
+			content,
+		} => render_raw_text(content, target, element_name)?,
+		Node::Multi(nodes) => {
+			for node in *nodes {
+				render_raw_text(node, target, element_name)?
+			}
+		}
+		Node::Keyed(pairs) => {
+			for pair in *pairs {
+				render_raw_text(&pair.content, target, element_name)?
+			}
+		}
+		Node::Text {
+			text,
+			dom_binding: _,
+		} => {
+			/// See <https://html.spec.whatwg.org/multipage/syntax.html#elements-2> and <https://html.spec.whatwg.org/multipage/syntax.html#cdata-rcdata-restrictions>.
+			///
+			/// Unlike with escapable raw text, it's not possible to run escape the sequence (of course), so the error has to be a lot more precise.
+			#[derive(Logos)]
+			#[logos(extras = &'s mut RawTextExtras<'s>)]
+			enum RawTextToken<'a> {
+				#[token("<")]
+				Lt,
+				#[token("</", check_for_error)]
+				LtSolidus(Result<(), Range<usize>>),
+				#[regex("[^<]+")]
+				SafeVerbatim(&'a str),
+				#[error]
+				Error,
+			}
+
+			struct RawTextExtras<'a> {
+				pub element_name: &'a str,
+				pub text: &'a str,
+			}
+
+			fn check_for_error<'a>(
+				lex: &mut Lexer<'a, RawTextToken<'a>>,
+			) -> Result<(), Range<usize>> {
+				let start = lex.span().start;
+				let end = lex.span().end;
+				let extras = &mut *lex.extras;
+
+				let name_range = end..end + extras.element_name.len();
+				if name_range.end + 1 > extras.text.len() {
+					return Ok(());
+				}
+
+				if !extras.text[name_range.clone()].eq_ignore_ascii_case(extras.element_name) {
+					return Ok(());
+				}
+
+				// It is more clear to say we're slicing one past the name.
+				#[allow(clippy::range_plus_one)]
+				match extras.text.as_bytes()[name_range.end] {
+					b'\t' | b'\n' | 0xC /* FORM FEED */ | b'\r' | b' ' | b'>' | b'/' => {
+						Err(start..name_range.end+1)
+					}
+					_ => Ok(())
+				}
+			}
+
+			let mut extras = RawTextExtras { element_name, text };
+			for token in RawTextToken::lexer_with_extras(text, &mut extras) {
+				match token {
+					RawTextToken::Lt => target.write_char('<'),
+					RawTextToken::LtSolidus(Ok(())) => target.write_str("</"),
+					RawTextToken::LtSolidus(Err(invalid_range)) => {
+						return Err(Error(ErrorKind::ElementClosedInRawText(
+							&text[invalid_range],
+						)))
+					}
+					RawTextToken::SafeVerbatim(str) => target.write_str(str),
+					RawTextToken::Error => unreachable!(),
+				}?
+			}
+		}
+		Node::RemnantSite(_) => todo!("`RemnantSite`"),
+	}
+	Ok(())
+}
+
+#[allow(clippy::items_after_statements)]
+#[allow(clippy::too_many_lines)]
+fn render_escapable_raw_text<'a, S: ThreadSafety>(
+	vdom: &'a Node<'a, S>,
+	target: &mut impl Write,
+) -> Result<(), Error<'a, S>> {
+	match vdom {
+		Node::Comment { .. } | Node::Element { .. } => {
+			return Err(Error(ErrorKind::NonTextDomNodeInEscapableRawTextPosition(
+				vdom,
+			)))
+		}
+		Node::Memoized {
+			state_key: _,
+			content,
+		} => render_escapable_raw_text(content, target)?,
+		Node::Multi(nodes) => {
+			for node in *nodes {
+				render_escapable_raw_text(node, target)?
+			}
+		}
+		Node::Keyed(pairs) => {
+			for pair in *pairs {
+				render_escapable_raw_text(&pair.content, target)?
+			}
+		}
+		Node::Text {
+			text,
+			dom_binding: _,
+		} => {
+			/// See <https://html.spec.whatwg.org/multipage/syntax.html#elements-2> and <https://html.spec.whatwg.org/multipage/syntax.html#cdata-rcdata-restrictions>.
+			///
+			/// Escaping with this model is a bit overzealous, but won't do harm and is fairly fast.
+			#[derive(Logos)]
+			enum EscapableRawTextToken<'a> {
+				#[token("<")]
+				Lt,
+				#[token("</")]
+				LtSolidus,
+				/// See <https://html.spec.whatwg.org/multipage/syntax.html#character-references>.
+				///
+				/// This could be an ambiguous ampersand or part something that would be parsed as character reference, so it's escaped unconditionally.
+				#[token("&")]
+				Ampersand,
+				#[regex("[^<&]+")]
+				SafeVerbatim(&'a str),
+				#[error]
+				Error,
+			}
+
+			for token in EscapableRawTextToken::lexer(text) {
+				match token {
+					EscapableRawTextToken::Lt => target.write_char('<'),
+					EscapableRawTextToken::LtSolidus => target.write_str("&lt;/"),
+					EscapableRawTextToken::Ampersand => target.write_str("&amp;"),
+					EscapableRawTextToken::SafeVerbatim(str) => target.write_str(str),
+					EscapableRawTextToken::Error => unreachable!(),
+				}?
+			}
+		}
+		Node::RemnantSite(_) => todo!("`RemnantSite`"),
+	}
+	Ok(())
+}
+
+//FIXME?: This probably blows up the text size. Check and, if necessary, replace it with a better categorization algorithm.
 #[derive(Logos, PartialEq)]
 enum ElementKind {
 	/// See <https://html.spec.whatwg.org/multipage/syntax.html#void-elements>.
@@ -268,7 +483,10 @@ enum ElementKind {
 	#[regex("[sS][tT][yY][lL][eE]")]
 	RawText,
 	/// See <https://html.spec.whatwg.org/multipage/syntax.html#escapable-raw-text-elements>.
+	/// See <https://html.spec.whatwg.org/multipage/syntax.html#element-restrictions> for special handling.
 	#[regex("[tT][eE][xX][tT][aA][rR][eE][aA]")]
+	EscapableRawTextTextarea,
+	/// See <https://html.spec.whatwg.org/multipage/syntax.html#escapable-raw-text-elements>.
 	#[regex("[tT][iI][tT][lL][eE]")]
 	EscapableRawText,
 	/// See <https://html.spec.whatwg.org/multipage/syntax.html#foreign-elements>.
@@ -277,6 +495,9 @@ enum ElementKind {
 	/// See <https://html.spec.whatwg.org/multipage/syntax.html#foreign-elements>.
 	//TODO
 	ForeignNotSelfClosing,
+	/// See <https://html.spec.whatwg.org/multipage/syntax.html#normal-elements>.
+	/// See <https://html.spec.whatwg.org/multipage/syntax.html#element-restrictions> for special handling.
+	NormalPre,
 	/// See <https://html.spec.whatwg.org/multipage/syntax.html#normal-elements>,
 	/// <https://html.spec.whatwg.org/multipage/syntax.html#syntax-tag-name>  
 	/// => <https://infra.spec.whatwg.org/#ascii-alphanumeric>  
@@ -382,12 +603,17 @@ impl AttributeValueMode {
 	}
 }
 
+#[derive(Debug)]
 pub struct Error<'a, S: ThreadSafety>(ErrorKind<'a, S>);
 
+#[derive(Debug)]
 enum ErrorKind<'a, S: ThreadSafety> {
 	InvalidElementName(&'a str),
 	InvalidAttributeName(&'a str),
 	NonEmptyVoidElementContent(&'a Node<'a, S>),
+	NonTextDomNodeInRawTextPosition(&'a Node<'a, S>),
+	NonTextDomNodeInEscapableRawTextPosition(&'a Node<'a, S>),
+	ElementClosedInRawText(&'a str),
 	FmtError(fmt::Error),
 }
 
@@ -397,8 +623,42 @@ impl<'a, S: ThreadSafety> From<fmt::Error> for Error<'a, S> {
 	}
 }
 
-impl<'a, S: ThreadSafety> Debug for Error<'a, S> {
-	fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		todo!()
+impl<'a, S: ThreadSafety> Display for Error<'a, S> {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		match &self.0 {
+			ErrorKind::InvalidElementName(str) => write!(f, "Invalid element name {:?}", str),
+			ErrorKind::InvalidAttributeName(str) => write!(f, "Invalid attribute name {:?}", str),
+			ErrorKind::NonEmptyVoidElementContent(node) => {
+				write!(f, "Non-empty void element content {:?}", node)
+			}
+			ErrorKind::NonTextDomNodeInRawTextPosition(node) => {
+				write!(f, "Non-text DOM node in raw text position {:?}", node)
+			}
+			ErrorKind::NonTextDomNodeInEscapableRawTextPosition(node) => {
+				write!(
+					f,
+					"Non-text DOM node in escapable raw text position {:?}",
+					node
+				)
+			}
+			ErrorKind::ElementClosedInRawText(str) => {
+				write!(f, "Element closed in raw text: {:?}", str)
+			}
+			ErrorKind::FmtError(fmt_error) => Display::fmt(fmt_error, f),
+		}
+	}
+}
+
+#[cfg(feature = "std")]
+extern crate std;
+
+#[cfg(feature = "std")]
+impl<'a, S: ThreadSafety> std::error::Error for Error<'a, S> {
+	fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+		if let ErrorKind::FmtError(fmt_error) = &self.0 {
+			Some(fmt_error)
+		} else {
+			None
+		}
 	}
 }
