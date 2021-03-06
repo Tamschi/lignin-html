@@ -38,5 +38,4 @@ logos = "0.12.0"
 cargo-husky = "1.5.0"
 doc-comment = "0.3.3"
 git_info = "0.1.2"
-lignin = { version = "0.0.5", features = ["callbacks"] }
 version-sync = "0.9.1"
