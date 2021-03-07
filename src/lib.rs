@@ -130,16 +130,21 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 		}
 
 		// See <https://html.spec.whatwg.org/multipage/syntax.html#elements-2>.
-		Node::Element {
-			element:
-				&Element {
-					name,
-					attributes,
-					ref content,
-					event_bindings: _,
-				},
+		Node::HtmlElement {
+			element,
+			dom_binding: _,
+		}
+		| Node::SvgElement {
+			element,
 			dom_binding: _,
 		} => {
+			let &Element {
+				name,
+				attributes,
+				ref content,
+				event_bindings: _,
+			} = element;
+
 			/// See <https://html.spec.whatwg.org/multipage/syntax.html#syntax-attribute-name>.
 			fn validate_attribute_name<S: ThreadSafety>(name: &str) -> Result<&str, Error<S>> {
 				for c in name.chars() {
@@ -166,6 +171,8 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 
 			let kind = ElementKind::detect(name)
 				.map_err(|name| Error(ErrorKind::InvalidElementName(name)))?;
+
+			//TODO: Validate distinction between HTML and SVG elements.
 
 			// Opening tag:
 			write!(target, "<{}", name)?;
@@ -322,7 +329,7 @@ fn render_raw_text<'a, S: ThreadSafety>(
 	}
 
 	match vdom {
-		Node::Comment { .. } | Node::Element { .. } => {
+		Node::Comment { .. } | Node::HtmlElement { .. } | Node::SvgElement { .. } => {
 			return Err(Error(ErrorKind::NonTextDomNodeInRawTextPosition(vdom)))
 		}
 		Node::Memoized {
@@ -421,7 +428,7 @@ fn render_escapable_raw_text<'a, S: ThreadSafety>(
 		return Err(Error(ErrorKind::DepthLimitExceeded(vdom)));
 	}
 	match vdom {
-		Node::Comment { .. } | Node::Element { .. } => {
+		Node::Comment { .. } | Node::HtmlElement { .. } | Node::SvgElement { .. } => {
 			return Err(Error(ErrorKind::NonTextDomNodeInEscapableRawTextPosition(
 				vdom,
 			)))

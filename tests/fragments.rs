@@ -5,7 +5,7 @@ use lignin_html::render_fragment;
 fn br() {
 	let mut fragment = String::new();
 	render_fragment(
-		&Node::Element {
+		&Node::HtmlElement {
 			element: &Element {
 				name: "br",
 				attributes: &[],
@@ -26,7 +26,7 @@ fn br() {
 fn div() {
 	let mut fragment = String::new();
 	render_fragment(
-		&Node::Element {
+		&Node::HtmlElement {
 			element: &Element {
 				name: "div",
 				attributes: &[],

@@ -12,11 +12,11 @@ impl Write for Drain {
 #[test]
 fn div_pass() {
 	render_fragment(
-		&Node::Element {
+		&Node::HtmlElement {
 			element: &Element {
 				name: "div",
 				attributes: &[],
-				content: Node::Element {
+				content: Node::HtmlElement {
 					element: &Element {
 						name: "div",
 						attributes: &[],
@@ -40,11 +40,11 @@ fn div_pass() {
 #[should_panic]
 fn div_fail() {
 	render_fragment(
-		&Node::Element {
+		&Node::HtmlElement {
 			element: &Element {
 				name: "div",
 				attributes: &[],
-				content: Node::Element {
+				content: Node::HtmlElement {
 					element: &Element {
 						name: "div",
 						attributes: &[],

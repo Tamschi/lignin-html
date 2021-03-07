@@ -38,7 +38,7 @@ use lignin_html::render_document;
 let mut document = String::new();
 
 render_document(
-  &Node::Element {
+  &Node::HtmlElement {
     element: &Element {
       // `lignin-html` is case-preserving but insensitive.
       // `lignin-dom` slightly prefers all-caps, as may other DOM renderers.¹
