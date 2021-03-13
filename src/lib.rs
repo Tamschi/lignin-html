@@ -134,6 +134,10 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 			element,
 			dom_binding: _,
 		}
+		| Node::MathMlElement {
+			element,
+			dom_binding: _,
+		}
 		| Node::SvgElement {
 			element,
 			dom_binding: _,
@@ -329,9 +333,10 @@ fn render_raw_text<'a, S: ThreadSafety>(
 	}
 
 	match vdom {
-		Node::Comment { .. } | Node::HtmlElement { .. } | Node::SvgElement { .. } => {
-			return Err(Error(ErrorKind::NonTextDomNodeInRawTextPosition(vdom)))
-		}
+		Node::Comment { .. }
+		| Node::HtmlElement { .. }
+		| Node::MathMlElement { .. }
+		| Node::SvgElement { .. } => return Err(Error(ErrorKind::NonTextDomNodeInRawTextPosition(vdom))),
 		Node::Memoized {
 			state_key: _,
 			content,
@@ -428,7 +433,10 @@ fn render_escapable_raw_text<'a, S: ThreadSafety>(
 		return Err(Error(ErrorKind::DepthLimitExceeded(vdom)));
 	}
 	match vdom {
-		Node::Comment { .. } | Node::HtmlElement { .. } | Node::SvgElement { .. } => {
+		Node::Comment { .. }
+		| Node::HtmlElement { .. }
+		| Node::MathMlElement { .. }
+		| Node::SvgElement { .. } => {
 			return Err(Error(ErrorKind::NonTextDomNodeInEscapableRawTextPosition(
 				vdom,
 			)))
