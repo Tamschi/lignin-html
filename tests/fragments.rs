@@ -7,7 +7,7 @@ fn br() {
 	render_fragment(
 		&Node::HtmlElement {
 			element: &Element {
-				name: "br",
+				name: "BR",
 				creation_options: ElementCreationOptions::new(),
 				attributes: &[],
 				content: Node::Multi(&[]),
@@ -20,7 +20,7 @@ fn br() {
 		1,
 	)
 	.unwrap();
-	assert_eq!(fragment, "<br>");
+	assert_eq!(fragment, "<BR>");
 }
 
 #[test]
@@ -29,7 +29,7 @@ fn div() {
 	render_fragment(
 		&Node::HtmlElement {
 			element: &Element {
-				name: "div",
+				name: "DIV",
 				creation_options: ElementCreationOptions::new(),
 				attributes: &[],
 				content: Node::Multi(&[]),
@@ -42,7 +42,7 @@ fn div() {
 		2,
 	)
 	.unwrap();
-	assert_eq!(fragment, "<div></div>");
+	assert_eq!(fragment, "<DIV></DIV>");
 }
 
 #[test]
@@ -51,8 +51,8 @@ fn div_custom() {
 	render_fragment(
 		&Node::HtmlElement {
 			element: &Element {
-				name: "div",
-				creation_options: ElementCreationOptions::new().with_is(Some("custom-div")),
+				name: "DIV",
+				creation_options: ElementCreationOptions::new().with_is(Some("CUSTOM-DIV")),
 				attributes: &[],
 				content: Node::Multi(&[]),
 				event_bindings: &[],
@@ -64,7 +64,7 @@ fn div_custom() {
 		2,
 	)
 	.unwrap();
-	assert_eq!(fragment, "<div is=custom-div></div>");
+	assert_eq!(fragment, "<DIV is=CUSTOM-DIV></DIV>");
 }
 
 #[test]

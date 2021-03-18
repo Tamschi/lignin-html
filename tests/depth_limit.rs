@@ -14,12 +14,12 @@ fn div_pass() {
 	render_fragment(
 		&Node::HtmlElement {
 			element: &Element {
-				name: "div",
+				name: "DIV",
 				creation_options: ElementCreationOptions::new(),
 				attributes: &[],
 				content: Node::HtmlElement {
 					element: &Element {
-						name: "div",
+						name: "DIV",
 						creation_options: ElementCreationOptions::new(),
 						attributes: &[],
 						content: Node::Multi(&[]),
@@ -44,12 +44,12 @@ fn div_fail() {
 	render_fragment(
 		&Node::HtmlElement {
 			element: &Element {
-				name: "div",
+				name: "DIV",
 				creation_options: ElementCreationOptions::new(),
 				attributes: &[],
 				content: Node::HtmlElement {
 					element: &Element {
-						name: "div",
+						name: "DIV",
 						creation_options: ElementCreationOptions::new(),
 						attributes: &[],
 						content: Node::Multi(&[]),
