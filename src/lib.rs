@@ -144,6 +144,7 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 		} => {
 			let &Element {
 				name,
+				creation_options,
 				attributes,
 				ref content,
 				event_bindings: _,
@@ -151,6 +152,10 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 
 			/// See <https://html.spec.whatwg.org/multipage/syntax.html#syntax-attribute-name>.
 			fn validate_attribute_name<S: ThreadSafety>(name: &str) -> Result<&str, Error<S>> {
+				if name == "is" {
+					return Err(Error(ErrorKind::ReservedAttributeName(name)));
+				}
+
 				for c in name.chars() {
 					match c {
 						// <https://infra.spec.whatwg.org/#control>
@@ -180,16 +185,17 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 
 			// Opening tag:
 			write!(target, "<{}", name)?;
-			for &Attribute {
-				name: attribute_name,
-				value,
-			} in attributes
-			{
-				write!(target, " {}", validate_attribute_name(attribute_name)?,)?;
+
+			fn write_attribute<'a, S: ThreadSafety>(
+				target: &mut impl Write,
+				validated_attribute_name: &str,
+				value: &str,
+			) -> Result<(), Error<'a, S>> {
+				write!(target, " {}", validated_attribute_name)?;
 
 				let value_mode = AttributeValueMode::detect(value);
 				target.write_str(match value_mode {
-					AttributeValueMode::Empty => continue,
+					AttributeValueMode::Empty => return Ok(()),
 					AttributeValueMode::Unquoted => "=",
 					AttributeValueMode::SingleQuoted => "='",
 					AttributeValueMode::DoubleQuoted => "\"",
@@ -209,6 +215,17 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 					AttributeValueMode::SingleQuoted => target.write_char('\'')?,
 					AttributeValueMode::DoubleQuoted => target.write_char('"')?,
 				}
+				Ok(())
+			}
+			if let Some(is) = creation_options.is() {
+				write_attribute(target, "is", is)?
+			}
+			for &Attribute {
+				name: attribute_name,
+				value,
+			} in attributes
+			{
+				write_attribute(target, validate_attribute_name(attribute_name)?, value)?
 			}
 			if kind == ElementKind::ForeignSelfClosing {
 				// Note the space! This is required in case the last attribute was unquoted.
@@ -647,6 +664,7 @@ pub struct Error<'a, S: ThreadSafety>(ErrorKind<'a, S>);
 #[derive(Debug)]
 enum ErrorKind<'a, S: ThreadSafety> {
 	InvalidElementName(&'a str),
+	ReservedAttributeName(&'a str),
 	InvalidAttributeName(&'a str),
 	NonEmptyVoidElementContent(&'a Node<'a, S>),
 	NonTextDomNodeInRawTextPosition(&'a Node<'a, S>),
@@ -666,6 +684,11 @@ impl<'a, S: ThreadSafety> Display for Error<'a, S> {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		match &self.0 {
 			ErrorKind::InvalidElementName(str) => write!(f, "Invalid element name {:?}", str),
+			ErrorKind::ReservedAttributeName(str) => write!(
+				f,
+				"Reserved attribute name {:?}; specify through `Element::creation_options` instead",
+				str
+			),
 			ErrorKind::InvalidAttributeName(str) => write!(f, "Invalid attribute name {:?}", str),
 			ErrorKind::NonEmptyVoidElementContent(node) => {
 				write!(f, "Non-empty void element content {:?}", node)

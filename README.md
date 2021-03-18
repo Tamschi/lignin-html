@@ -32,7 +32,7 @@ cargo add lignin-html
 ## Example
 
 ```rust
-use lignin::{Node, Element};
+use lignin::{Node, Element, ElementCreationOptions};
 use lignin_html::render_document;
 
 let mut document = String::new();
@@ -43,6 +43,7 @@ render_document(
       // `lignin-html` is case-preserving but insensitive.
       // `lignin-dom` slightly prefers all-caps, as may other DOM renderers.¹
       name: "DIV",
+      creation_options: ElementCreationOptions::new(), // `const fn` builder pattern.
       attributes: &[],
       content: Node::Multi(&[
         "Hello! ".into(),

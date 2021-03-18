@@ -1,4 +1,4 @@
-use lignin::{Element, Node};
+use lignin::{Element, ElementCreationOptions, Node};
 use lignin_html::render_fragment;
 use std::fmt::Write;
 
@@ -15,10 +15,12 @@ fn div_pass() {
 		&Node::HtmlElement {
 			element: &Element {
 				name: "div",
+				creation_options: ElementCreationOptions::new(),
 				attributes: &[],
 				content: Node::HtmlElement {
 					element: &Element {
 						name: "div",
+						creation_options: ElementCreationOptions::new(),
 						attributes: &[],
 						content: Node::Multi(&[]),
 						event_bindings: &[],
@@ -43,10 +45,12 @@ fn div_fail() {
 		&Node::HtmlElement {
 			element: &Element {
 				name: "div",
+				creation_options: ElementCreationOptions::new(),
 				attributes: &[],
 				content: Node::HtmlElement {
 					element: &Element {
 						name: "div",
+						creation_options: ElementCreationOptions::new(),
 						attributes: &[],
 						content: Node::Multi(&[]),
 						event_bindings: &[],
