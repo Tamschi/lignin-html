@@ -31,7 +31,7 @@ maintenance = { status = "experimental" }
 std = [] # Implements std::error::Error on lignin_html::Error
 
 [dependencies]
-lignin = { git = "https://github.com/Tamschi/lignin.git", branch = "rework-2021-02" } # public
+lignin = { git = "https://github.com/Tamschi/lignin.git", branch = "develop" } # public
 logos = "0.12.0"
 
 [dev-dependencies]
