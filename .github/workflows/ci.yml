@@ -11,8 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
+    - uses: actions-rs/toolchain@v1.0.7
     - run: cat CI.toml >> Cargo.toml
+    - run: cargo test --workspace --no-default-features
+    - run: cargo test --workspace
     - run: cargo test --workspace --all-features
 
   check:
@@ -21,17 +23,13 @@ jobs:
     strategy:
       matrix:
         os: [macos, ubuntu, windows]
-        rust: [1.40.0, stable, beta, nightly]
-        include:
-        - os: ubuntu
-          target: wasm32-unknown-unknown
-          no-workspace: --lib
+        rust: ['1.51', stable, beta, nightly]
     env:
       target: ${{matrix.target && format('--target={0}', matrix.target)}}
       workspace: ${{matrix.no-workspace || '--workspace'}}
     steps:
     - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
+    - uses: actions-rs/toolchain@v1.0.7
       with:
         toolchain: ${{matrix.rust}}
         profile: minimal
@@ -46,11 +44,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
+    - uses: actions-rs/toolchain@v1.0.7
       with:
         toolchain: nightly
     - run: cat CI.toml >> Cargo.toml
     - run: cargo +nightly update -Z minimal-versions
+    - run: cargo +nightly check --lib --no-default-features
+    - run: cargo +nightly check --lib
     - run: cargo +nightly check --lib --all-features
 
   clippy:
@@ -58,12 +58,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
+    - uses: actions-rs/toolchain@v1.0.7
       with:
         toolchain: nightly
         profile: minimal
         components: clippy
     - run: cat CI.toml >> Cargo.toml
+    - run: cargo +nightly clippy --workspace --no-default-features
+    - run: cargo +nightly clippy --workspace
     - run: cargo +nightly clippy --workspace --all-features
 
   fmt:
@@ -71,7 +73,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
+    - uses: actions-rs/toolchain@v1.0.7
       with:
         toolchain: nightly
         profile: minimal
