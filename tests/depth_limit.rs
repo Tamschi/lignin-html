@@ -1,4 +1,4 @@
-use lignin::{Element, Node};
+use lignin::{Element, ElementCreationOptions, Node};
 use lignin_html::render_fragment;
 use std::fmt::Write;
 
@@ -12,13 +12,15 @@ impl Write for Drain {
 #[test]
 fn div_pass() {
 	render_fragment(
-		&Node::Element {
+		&Node::HtmlElement {
 			element: &Element {
-				name: "div",
+				name: "DIV",
+				creation_options: ElementCreationOptions::new(),
 				attributes: &[],
-				content: Node::Element {
+				content: Node::HtmlElement {
 					element: &Element {
-						name: "div",
+						name: "DIV",
+						creation_options: ElementCreationOptions::new(),
 						attributes: &[],
 						content: Node::Multi(&[]),
 						event_bindings: &[],
@@ -40,13 +42,15 @@ fn div_pass() {
 #[should_panic]
 fn div_fail() {
 	render_fragment(
-		&Node::Element {
+		&Node::HtmlElement {
 			element: &Element {
-				name: "div",
+				name: "DIV",
+				creation_options: ElementCreationOptions::new(),
 				attributes: &[],
-				content: Node::Element {
+				content: Node::HtmlElement {
 					element: &Element {
-						name: "div",
+						name: "DIV",
+						creation_options: ElementCreationOptions::new(),
 						attributes: &[],
 						content: Node::Multi(&[]),
 						event_bindings: &[],

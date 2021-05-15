@@ -2,6 +2,20 @@
 
 <!-- markdownlint-disable no-trailing-punctuation -->
 
+## next
+
+TODO: Date
+
+**This is a rewrite with changed API!**
+
+It should be still be very easy to upgrade to the new version, since mostly fewer parameters are needed.
+
+* **Breaking:**
+  * Reimplemented the crate from scratch with more convenient API.
+  * Much better validation that now aims to only produce syntactically valid HTML, escaping all text where necessary. (partially TODO)
+  * Increased minimum supported Rust version from 1.44.0 to 1.46.0
+    > required because of `lignin` upgrade in the previous version.
+
 ## 0.0.5
 
 2021-01-30
