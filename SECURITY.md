@@ -5,7 +5,7 @@
 | Version | Supported          |
 | ------- | ------------------ |
 | 0.0.1-3 | :white_check_mark: |
-| 0.0.4   | :x: |
+| 0.0.4   | :x:                |
 | 0.0.5   | :white_check_mark: |
 
 Faulty versions are [yanked](https://doc.rust-lang.org/cargo/commands/cargo-yank.html), where possible after a Semver-compatible update is made available, and added to the table above as unsupported.  
