@@ -20,6 +20,7 @@
 #![forbid(unsafe_code)]
 #![no_std]
 #![warn(clippy::pedantic)]
+#![allow(clippy::semicolon_if_nothing_returned)]
 
 //TODO: Much more thorough tests, ideally with coverage.
 

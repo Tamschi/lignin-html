@@ -26,7 +26,7 @@ publish = false
 [badges]
 is-it-maintained-issue-resolution = { repository = "Tamschi/lignin-html" }
 is-it-maintained-open-issues = { repository = "Tamschi/lignin-html" }
-maintenance = { status = "experimental" }
+maintenance = { status = "experimental" } # This may differ between branches.
 
 [features]
 std = [] # Implements std::error::Error on lignin_html::Error
@@ -40,4 +40,4 @@ cargo-husky = "1.5.0"
 doc-comment = "0.3.3"
 git_info = "0.1.2"
 version-sync = "0.9.3"
-wasm-bindgen-test = "0.3.25"
+wasm-bindgen-test = "0.3.28"
