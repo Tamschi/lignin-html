@@ -4,7 +4,7 @@
 [![Crates.io](https://img.shields.io/crates/v/lignin-html)](https://crates.io/crates/lignin-html)
 [![Docs.rs](https://docs.rs/lignin-html/badge.svg)](https://docs.rs/lignin-html)
 
-![Rust 1.46](https://img.shields.io/static/v1?logo=Rust&label=&message=1.46&color=grey)
+![Rust 1.54](https://img.shields.io/static/v1?logo=Rust&label=&message=1.54&color=grey)
 [![CI](https://github.com/Tamschi/lignin-html/workflows/CI/badge.svg?branch=develop)](https://github.com/Tamschi/lignin-html/actions?query=workflow%3ACI+branch%3Adevelop)
 ![Crates.io - License](https://img.shields.io/crates/l/lignin-html/0.0.5)
 
@@ -14,6 +14,7 @@
 [![good first issues](https://img.shields.io/github/issues-raw/Tamschi/lignin-html/good%20first%20issue?label=good+first+issues)](https://github.com/Tamschi/lignin-html/contribute)
 
 [![crev reviews](https://web.crev.dev/rust-reviews/badge/crev_count/lignin-html.svg)](https://web.crev.dev/rust-reviews/crate/lignin-html/)
+[![Zulip Chat](https://img.shields.io/endpoint?label=chat&url=https%3A%2F%2Fiteration-square-automation.schichler.dev%2F.netlify%2Ffunctions%2Fstream_subscribers_shield%3Fstream%3Dproject%252Flignin-html)](https://iteration-square.schichler.dev/#narrow/stream/project.2Flignin-html)
 
 HTML renderer for [lignin] VDOM Nodes.
 
@@ -108,3 +109,6 @@ This includes the Rust version requirement specified above.
 Earlier Rust versions may be compatible, but this can change with minor or patch releases.
 
 Which versions are affected by features and patches can be determined from the respective headings in [CHANGELOG.md](CHANGELOG.md).
+
+Note that dependencies of this crate may have a more lenient MSRV policy!
+Please use `cargo +nightly update -Z minimal-versions` in your automation if you don't generate Cargo.lock manually (or as necessary) and require support for a compiler older than current stable.

@@ -1,5 +1,7 @@
 //! An HTML renderer for [`lignin`](https://github.com/Tamschi/lignin) that does *some* syntactic and *no* semantic validation.
 //!
+//! [![Zulip Chat](https://img.shields.io/endpoint?label=chat&url=https%3A%2F%2Fiteration-square-automation.schichler.dev%2F.netlify%2Ffunctions%2Fstream_subscribers_shield%3Fstream%3Dproject%252Flignin-html)](https://iteration-square.schichler.dev/#narrow/stream/project.2Flignin-html)
+//!
 //! Escaping is performed automatically where necessary, but the output isn't guaranteed to be minimal.
 //!
 //! **`lignin-html` is not round-trip-safe regarding any HTML parser implementation.**  
@@ -16,18 +18,18 @@
 //!
 //! > Originally I was going to use [zero width non-joiner](https://graphemica.com/200C) and [zero width joiner](https://graphemica.com/200D) characters for this,
 //! > to make the comment resemble the original better, but this could be a very bad idea if any transport in-between strips Unicode.
+
 #![doc(html_root_url = "https://docs.rs/lignin-html/0.0.5")]
 #![forbid(unsafe_code)]
 #![no_std]
-#![warn(clippy::pedantic)]
+#![warn(clippy::pedantic, missing_docs)]
 #![allow(clippy::semicolon_if_nothing_returned)]
 
 //TODO: Much more thorough tests, ideally with coverage.
 
 #[cfg(doctest)]
-pub mod readme {
-	doc_comment::doctest!("../README.md");
-}
+#[doc = include_str!("../README.md")]
+mod readme {}
 
 use core::{
 	fmt::{self, Display, Write},
