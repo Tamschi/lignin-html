@@ -335,7 +335,9 @@ pub fn render_fragment<'a, S: ThreadSafety>(
 			}
 		}
 
-		Node::RemnantSite(_) => todo!("`RemnantSite`"),
+		Node::RemnantSite(_) => {
+			unreachable!("`RemnantSite` can't be constructed in this version of `lignin`.")
+		} //TODO
 	};
 	Ok(())
 }
@@ -552,9 +554,12 @@ enum ElementKind {
 	ForeignSelfClosing,
 	/// See <https://html.spec.whatwg.org/multipage/syntax.html#foreign-elements>.
 	//TODO
+	#[allow(dead_code)]
 	ForeignNotSelfClosing,
 	/// See <https://html.spec.whatwg.org/multipage/syntax.html#normal-elements>.
 	/// See <https://html.spec.whatwg.org/multipage/syntax.html#element-restrictions> for special handling.
+	//TODO
+	#[allow(dead_code)]
 	NormalPre,
 	/// See <https://html.spec.whatwg.org/multipage/syntax.html#normal-elements>,
 	/// <https://html.spec.whatwg.org/multipage/syntax.html#syntax-tag-name>  
@@ -594,10 +599,9 @@ impl ElementKind {
 		let mut lexer = Self::lexer(element_name);
 		let mut kind = match lexer.next() {
 			// These may not appear first.
-			None
-			| Some(Self::Dash)
-			| Some(Self::PotentialCustomElementNameCharacter)
-			| Some(Self::Invalid) => return Err(element_name),
+			None | Some(Self::Dash | Self::PotentialCustomElementNameCharacter | Self::Invalid) => {
+				return Err(element_name)
+			}
 			Some(kind) => kind,
 		};
 		let mut dashed = false;
@@ -661,6 +665,7 @@ impl AttributeValueMode {
 	}
 }
 
+/// [lignin-html](`self`) error.
 #[derive(Debug)]
 pub struct Error<'a, S: ThreadSafety>(ErrorKind<'a, S>);
 
